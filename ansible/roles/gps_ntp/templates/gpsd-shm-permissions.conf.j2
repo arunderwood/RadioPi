@@ -1,0 +1,4 @@
+{{ ansible_managed | comment }}
+[Service]
+# Run gpsd as gpsd user but in {{ gps_ntp_chrony_group }} group so SHM is readable by chrony.
+Group={{ gps_ntp_chrony_group }}

@@ -1,2 +1,5 @@
 ---
 # Host-specific variables for marconi (GPS/NTP server).
+
+# Hand-calibrated NMEA offset for marconi's GPS receiver.
+gps_ntp_nmea_offset: 0.265

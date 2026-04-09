@@ -1,0 +1,61 @@
+---
+# Tests the lineinfile regexes used by roles/gps_ntp/tasks/boot.yml.
+#
+# Run with:
+#   uv run ansible-playbook tests/boot_regex.yml
+#
+# The regexes are loaded from the real task file so the test breaks if they
+# drift. Each case asserts whether a sample config.txt line should match.
+- name: Gps_ntp boot regex tests
+  hosts: localhost
+  gather_facts: false
+  connection: local
+  vars:
+    boot_tasks: "{{ lookup('file', '../roles/gps_ntp/tasks/boot.yml') | from_yaml }}"
+    uart_regex: >-
+      {{ (boot_tasks | selectattr('name', 'search', 'UART0') | first)['ansible.builtin.lineinfile'].regexp }}
+    pps_regex: >-
+      {{ (boot_tasks | selectattr('name', 'search', 'pps-gpio') | first)['ansible.builtin.lineinfile'].regexp }}
+
+    uart_should_match:
+      - dtparam=uart0=on
+      - dtparam=uart0=off
+      - "  dtparam=uart0=on"
+    uart_should_not_match:
+      - dtparam=audio=on
+      - enable_uart=1
+      - dtparam=uart1=on
+      - "#dtparam=uart0=on"
+
+    pps_should_match:
+      - dtoverlay=pps-gpio,gpiopin=4
+      - dtoverlay=pps-gpio,gpiopin=18
+      - dtoverlay=pps-gpio
+    pps_should_not_match:
+      - dtoverlay=vc4-kms-v3d
+      - "#dtoverlay=pps-gpio,gpiopin=4"
+
+  tasks:
+    - name: UART regex must match valid lines
+      ansible.builtin.assert:
+        that: (item | regex_search(uart_regex)) is not none
+        fail_msg: "uart_regex {{ uart_regex }} failed to match {{ item }}"
+      loop: "{{ uart_should_match }}"
+
+    - name: UART regex must not match unrelated lines
+      ansible.builtin.assert:
+        that: (item | regex_search(uart_regex)) is none
+        fail_msg: "uart_regex {{ uart_regex }} wrongly matched {{ item }}"
+      loop: "{{ uart_should_not_match }}"
+
+    - name: PPS overlay regex must match valid lines
+      ansible.builtin.assert:
+        that: (item | regex_search(pps_regex)) is not none
+        fail_msg: "pps_regex {{ pps_regex }} failed to match {{ item }}"
+      loop: "{{ pps_should_match }}"
+
+    - name: PPS overlay regex must not match unrelated lines
+      ansible.builtin.assert:
+        that: (item | regex_search(pps_regex)) is none
+        fail_msg: "pps_regex {{ pps_regex }} wrongly matched {{ item }}"
+      loop: "{{ pps_should_not_match }}"

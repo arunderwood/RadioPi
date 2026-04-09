@@ -1,0 +1,39 @@
+---
+# GPIO pin used for the PPS signal from the GPS receiver.
+gps_ntp_pps_gpio_pin: 4
+
+# Serial device that gpsd reads NMEA sentences from.
+gps_ntp_serial_device: /dev/ttyAMA0
+
+# PPS character device created by the pps-gpio overlay.
+gps_ntp_pps_device: /dev/pps0
+
+# Per-receiver hand-tuned NMEA offset (seconds). Override in host_vars.
+gps_ntp_nmea_offset: 0.265
+gps_ntp_nmea_filter: 3
+gps_ntp_nmea_precision: 1e-3
+
+# PPS poll exponent (chrony polls every 2^N seconds).
+gps_ntp_pps_poll: 3
+
+# Upstream NTP pool used as a sanity-check / fallback.
+gps_ntp_chrony_pool: 2.debian.pool.ntp.org
+
+# Networks allowed to query this NTP server.
+gps_ntp_allow_networks:
+  - 192.168.0.0/16
+
+# Stratum to advertise when GPS is unavailable (orphan mode).
+gps_ntp_orphan_stratum: 10
+
+# Chrony rate-limit directive body.
+gps_ntp_ratelimit: "interval 3 burst 8 leak 4"
+
+# Chrony log directives.
+gps_ntp_log_directives: "tracking measurements statistics"
+
+# Path to the Raspberry Pi firmware config.
+gps_ntp_boot_config_path: /boot/firmware/config.txt
+
+# Group that owns /dev/pps0 and gpsd's SHM segment so chrony can read it.
+gps_ntp_chrony_group: _chrony

@@ -28,8 +28,12 @@ Run playbooks via `uv run` (or `source .venv/bin/activate` once):
 ```sh
 uv run ansible-playbook playbooks/ping.yml
 uv run ansible-playbook site.yml
-make lint   # uv run ansible-lint
+make lint    # uv run ansible-lint (also runs syntax-check on every discovered playbook)
+make test    # run every tests/*.yml assert playbook
+make check   # lint + test — the preferred pre-commit gate
 ```
+
+`make check` also runs automatically via a `PostToolUse` hook (`.claude/settings.json`) whenever Claude edits a `*.yml`/`*.yaml`/`*.j2`/`Makefile`/`*.cfg` file under `ansible/`. You don't need to invoke it manually after edits — but do run it before committing if you've been editing outside Claude.
 
 When adding deps: Python → edit `pyproject.toml`, `uv sync`. Galaxy → edit `requirements.yml`, re-run `make bootstrap`.
 
@@ -41,9 +45,11 @@ When adding deps: Python → edit `pyproject.toml`, `uv sync`. Galaxy → edit `
 
 - `site.yml` is the top-level entrypoint applying the `common` role to the `radio_pis` group.
 - `playbooks/ping.yml` is for connectivity checks.
-- `playbooks/{marconi,aloha}.yml` are host-specific plays; currently stubs that apply `common` with TODO comments.
+- `playbooks/marconi.yml` applies `common` + `gps_ntp`. `playbooks/aloha.yml` is still a stub.
 - `roles/common/` is a minimal placeholder (only `gather_subset: min`). Grow it for things that apply to all radio pis; create new roles for host-specific functionality rather than piling onto `common`.
-- `group_vars/radio_pis.yml`, `host_vars/{marconi,aloha}.yml` exist as empty placeholders.
+- `roles/gps_ntp/` reproduces marconi's Stratum 1 setup: chrony + gpsd + PPS via `dtoverlay=pps-gpio,gpiopin=4` on `/dev/pps0`, NMEA over `/dev/ttyAMA0` into chrony SHM unit 2. Boot-config changes only take effect after a reboot — the role prints a warning via handler rather than auto-rebooting. All tunables (offset, allowed networks, GPIO pin) live in `defaults/main.yml`; per-host overrides go in `host_vars/`.
+- `group_vars/radio_pis.yml` and `host_vars/aloha.yml` are empty placeholders. `host_vars/marconi.yml` records the hand-calibrated `gps_ntp_nmea_offset`.
+- `tests/` holds ansible-native assert playbooks (currently `boot_regex.yml`, which loads the real lineinfile regexes from `roles/gps_ntp/tasks/boot.yml` and exercises them). Add new test playbooks here — `make test` globs `tests/*.yml` so they wire in automatically.
 
 ### ansible.cfg notes
 

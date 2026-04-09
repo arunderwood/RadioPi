@@ -1,0 +1,62 @@
+{{ ansible_managed | comment }}
+# Welcome to the chrony configuration file. See chrony.conf(5) for more
+# information about usable directives.
+
+# Include configuration files found in /etc/chrony/conf.d.
+confdir /etc/chrony/conf.d
+
+# Use Debian vendor zone.
+pool {{ gps_ntp_chrony_pool }} iburst
+
+# SHM refclock is shared memory driver, populated by gpsd and read by chrony.
+# It is SHM 2.
+# refid is what we want to call this source = NMEA.
+# offset is the hand-tuned per-receiver delay.
+# precision: 1e-3 = 1 ms (NMEA is not very precise).
+# poll 0 = poll every 2^0 = 1 second.
+# filter N = average of N most recent readings (NMEA can be jumpy).
+# noselect: never selected as a sync source on its own — used only to lock PPS.
+refclock SHM 2 refid NMEA offset {{ gps_ntp_nmea_offset }} precision {{ gps_ntp_nmea_precision }} poll 0 filter {{ gps_ntp_nmea_filter }} noselect
+
+# PPS refclock — /dev/pps0 from the pps-gpio overlay.
+# lock NMEA: combine with the NMEA source for time-of-day info.
+# offset 0.0: PPS itself has no offset.
+# poll N = poll every 2^N seconds.
+# trust: keep this combined source even if NMEA looks like a falseticker.
+refclock PPS {{ gps_ntp_pps_device }} refid PPS lock NMEA offset 0.0 poll {{ gps_ntp_pps_poll }} trust
+
+# Logging.
+log {{ gps_ntp_log_directives }}
+
+# Use NTP sources found in /etc/chrony/sources.d.
+sourcedir /etc/chrony/sources.d
+
+# This directive specifies the location of the file containing ID/key pairs for
+# NTP authentication.
+keyfile /etc/chrony/chrony.keys
+
+# This directive specifies the file into which chronyd will store the rate
+# information.
+driftfile /var/lib/chrony/chrony.drift
+
+# Save NTS keys and cookies.
+ntsdumpdir /var/lib/chrony
+
+# Log files location.
+logdir /var/log/chrony
+
+# Stop bad estimates upsetting machine clock.
+maxupdateskew 100.0
+
+# This directive enables kernel synchronisation (every 11 minutes) of the
+# real-time clock. Note that it can't be used along with the 'rtcfile' directive.
+rtcsync
+
+# Step the system clock instead of slewing it if the adjustment is larger than
+# one second, but only in the first three clock updates.
+makestep 1 3
+
+# Get TAI-UTC offset and leap seconds from the system tz database.
+# This directive must be commented out when using time sources serving
+# leap-smeared time.
+leapsectz right/UTC

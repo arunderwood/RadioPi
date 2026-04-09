@@ -1,0 +1,28 @@
+---
+- name: Restart gpsd
+  ansible.builtin.service:
+    name: gpsd
+    state: restarted
+
+- name: Restart chrony
+  ansible.builtin.service:
+    name: chrony
+    state: restarted
+
+- name: Reload systemd
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Reload udev
+  ansible.builtin.command: udevadm control --reload
+  changed_when: true
+
+- name: Trigger udev for pps
+  ansible.builtin.command: "udevadm trigger {{ gps_ntp_pps_device }}"
+  changed_when: true
+
+- name: Warn reboot required
+  ansible.builtin.debug:
+    msg: >-
+      Boot firmware config changed ({{ gps_ntp_boot_config_path }}).
+      A reboot of marconi is required for the PPS/UART overlays to take effect.
