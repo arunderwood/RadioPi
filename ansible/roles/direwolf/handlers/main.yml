@@ -1,0 +1,10 @@
+---
+- name: Reload systemd
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Restart direwolf
+  ansible.builtin.service:
+    name: direwolf
+    state: restarted
+  when: not ansible_check_mode

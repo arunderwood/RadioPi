@@ -1,0 +1,41 @@
+---
+# Direwolf 1.8.1 lives in Debian trixie-backports on aloha (Debian 13).
+# The stable trixie pocket only has 1.7, so we enable backports and pin
+# the package to it with apt's default_release.
+direwolf_backports_name: debian-backports
+direwolf_backports_uri: http://deb.debian.org/debian
+direwolf_backports_suite: "{{ ansible_facts['distribution_release'] }}-backports"
+direwolf_backports_signed_by: /usr/share/keyrings/debian-archive-keyring.gpg
+
+# Station call sign and SSID. Override in host_vars.
+direwolf_mycall: NOCALL
+
+# ALSA capture/playback device for the radio interface.
+# DigiRig presents as a generic USB sound card named "Device".
+direwolf_adevice: "plughw:CARD=Device,DEV=0"
+direwolf_arate: 48000
+
+# 1200 baud AFSK for VHF packet / APRS.
+direwolf_modem: 1200
+
+# PTT line. DigiRig uses RTS on the CP2102 UART.
+direwolf_ptt: "/dev/ttyUSB0 RTS"
+direwolf_ptt_serial_device: /dev/ttyUSB0
+
+# Virtual TNC client sockets.
+direwolf_agwport: 8000
+direwolf_kissport: 8001
+
+# IGate transmit rate limit (1-minute 5-minute).
+direwolf_igtxlimit: "6 10"
+
+# Service account direwolf runs as.
+direwolf_user: direwolf
+direwolf_group: direwolf
+direwolf_extra_groups:
+  - audio
+  - dialout
+
+direwolf_binary: /usr/bin/direwolf
+direwolf_config_path: /etc/direwolf.conf
+direwolf_service_path: /etc/systemd/system/direwolf.service
