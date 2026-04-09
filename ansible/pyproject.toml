@@ -1,0 +1,9 @@
+[project]
+name = "radiopi-ansible"
+version = "0"
+description = "Ansible control environment for RadioPi."
+requires-python = ">=3.11"
+dependencies = [
+  "ansible>=10",
+  "ansible-lint",
+]

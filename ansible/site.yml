@@ -1,0 +1,5 @@
+---
+- name: Baseline for all radio pis
+  hosts: radio_pis
+  roles:
+    - common

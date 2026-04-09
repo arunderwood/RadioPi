@@ -1,0 +1,4 @@
+---
+- name: Gather minimal facts
+  ansible.builtin.setup:
+    gather_subset: min

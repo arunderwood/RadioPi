@@ -1,0 +1,7 @@
+---
+# Galaxy collections and roles used by RadioPi playbooks.
+collections:
+  - name: community.general
+  - name: ansible.posix
+
+roles: []

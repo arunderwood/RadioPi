@@ -1,0 +1,7 @@
+---
+# aloha — future AX.25 / NET/ROM / BBS node.
+# TODO: packet radio stack (deferred).
+- name: Configure aloha
+  hosts: aloha
+  roles:
+    - common

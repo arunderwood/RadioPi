@@ -1,0 +1,7 @@
+---
+- name: Ping radio pis
+  hosts: radio_pis
+  gather_facts: false
+  tasks:
+    - name: Ping
+      ansible.builtin.ping:

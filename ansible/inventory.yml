@@ -1,0 +1,7 @@
+---
+all:
+  children:
+    radio_pis:
+      hosts:
+        marconi:
+        aloha:

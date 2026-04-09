@@ -1,0 +1,7 @@
+---
+# marconi — GPS-disciplined NTP server.
+# TODO: NTP / gpsd / chrony configuration.
+- name: Configure marconi
+  hosts: marconi
+  roles:
+    - common
