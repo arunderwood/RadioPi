@@ -1,0 +1,9 @@
+---
+- name: Deploy /etc/default/gpsd
+  ansible.builtin.template:
+    src: gpsd.default.j2
+    dest: /etc/default/gpsd
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart gpsd

@@ -1,0 +1,24 @@
+---
+- name: Install GPS/NTP packages
+  ansible.builtin.import_tasks: packages.yml
+
+- name: Configure boot firmware overlays
+  ansible.builtin.import_tasks: boot.yml
+
+- name: Configure gpsd
+  ansible.builtin.import_tasks: gpsd.yml
+
+- name: Configure chrony
+  ansible.builtin.import_tasks: chrony.yml
+
+- name: Configure permissions and service drop-ins
+  ansible.builtin.import_tasks: permissions.yml
+
+- name: Ensure gpsd and chrony are enabled and running
+  ansible.builtin.service:
+    name: "{{ item }}"
+    enabled: true
+    state: started
+  loop:
+    - gpsd
+    - chrony

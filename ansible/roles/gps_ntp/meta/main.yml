@@ -1,8 +1,8 @@
 ---
 galaxy_info:
-  role_name: common
+  role_name: gps_ntp
   author: arunderwood
-  description: Baseline configuration for radio pis.
+  description: GPS-disciplined Stratum 1 NTP server using chrony + gpsd + PPS on Raspberry Pi.
   license: MIT
   platforms:
     - name: Debian

@@ -1,0 +1,18 @@
+{{ ansible_managed | comment }}
+# Only allow command access through Unix domain socket
+cmdallow 127.0.0.1
+cmdallow ::1
+
+# Bind to all interfaces (LAN and WIFI)
+bindaddress 0.0.0.0
+
+# Allow NTP requests from configured local networks.
+{% for net in gps_ntp_allow_networks %}
+allow {{ net }}
+{% endfor %}
+
+# Rate limiting to prevent abuse/amplification attacks
+ratelimit {{ gps_ntp_ratelimit }}
+
+# Serve time even if GPS loses sync temporarily.
+local stratum {{ gps_ntp_orphan_stratum }} orphan

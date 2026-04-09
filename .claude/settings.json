@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "statusMessage": "ansible: lint + tests",
+            "asyncRewake": true,
+            "timeout": 60,
+            "command": "f=$(jq -r '.tool_response.filePath // .tool_input.file_path // empty' 2>/dev/null); case \"$f\" in */ansible/*) case \"$f\" in *.yml|*.yaml|*.j2|*/Makefile|*.cfg) ansible_dir=\"${f%/ansible/*}/ansible\"; cd \"$ansible_dir\" && make check 1>&2 ;; esac ;; esac"
+          }
+        ]
+      }
+    ]
+  }
+}

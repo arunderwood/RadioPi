@@ -1,0 +1,11 @@
+---
+- name: Install chrony, gpsd, and pps-tools
+  ansible.builtin.apt:
+    name:
+      - chrony
+      - gpsd
+      - gpsd-clients
+      - pps-tools
+    state: present
+    update_cache: true
+    cache_valid_time: 3600

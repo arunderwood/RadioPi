@@ -1,0 +1,18 @@
+---
+- name: Ensure UART0 is enabled in boot config
+  ansible.builtin.lineinfile:
+    path: "{{ gps_ntp_boot_config_path }}"
+    regexp: '^\s*dtparam=uart0='
+    line: dtparam=uart0=on
+    insertafter: '^\[all\]'
+    state: present
+  notify: Warn reboot required
+
+- name: Ensure pps-gpio overlay is enabled in boot config
+  ansible.builtin.lineinfile:
+    path: "{{ gps_ntp_boot_config_path }}"
+    regexp: '^\s*dtoverlay=pps-gpio'
+    line: "dtoverlay=pps-gpio,gpiopin={{ gps_ntp_pps_gpio_pin }}"
+    insertafter: '^\[all\]'
+    state: present
+  notify: Warn reboot required

@@ -1,0 +1,27 @@
+---
+- name: Deploy chrony.conf
+  ansible.builtin.template:
+    src: chrony.conf.j2
+    dest: /etc/chrony/chrony.conf
+    owner: root
+    group: root
+    mode: "0644"
+    validate: chronyd -p -f %s
+  notify: Restart chrony
+
+- name: Ensure chrony conf.d directory exists
+  ansible.builtin.file:
+    path: /etc/chrony/conf.d
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Deploy local NTP server config
+  ansible.builtin.template:
+    src: local-server.conf.j2
+    dest: /etc/chrony/conf.d/local-server.conf
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart chrony
