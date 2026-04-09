@@ -1,0 +1,53 @@
+---
+# Renders roles/direwolf/templates/direwolf.conf.j2 with sample vars and
+# asserts the required directives are present and Windows-only tokens are
+# absent.
+#
+# Run with:
+#   uv run ansible-playbook tests/direwolf_conf.yml
+- name: Direwolf config template tests
+  hosts: localhost
+  gather_facts: false
+  connection: local
+  vars:
+    direwolf_mycall: W9CPZ
+    direwolf_adevice: "plughw:CARD=Device,DEV=0"
+    direwolf_arate: 48000
+    direwolf_modem: 1200
+    direwolf_ptt: "/dev/ttyUSB0 RTS"
+    direwolf_agwport: 8000
+    direwolf_kissport: 8001
+    direwolf_igtxlimit: "6 10"
+
+    rendered: "{{ lookup('template', '../roles/direwolf/templates/direwolf.conf.j2') }}"
+
+    required_lines:
+      - "ADEVICE plughw:CARD=Device,DEV=0"
+      - "ARATE 48000"
+      - "CHANNEL 0"
+      - "MODEM 1200"
+      - "MYCALL W9CPZ"
+      - "PTT /dev/ttyUSB0 RTS"
+      - "AGWPORT 8000"
+      - "KISSPORT 8001"
+      - "IGTXLIMIT 6 10"
+
+    forbidden_tokens:
+      - COM12
+      - NULLMODEM
+      - SERIALKISS
+      - dwespeak
+      - "PTT CM108"
+
+  tasks:
+    - name: Required directives must be present
+      ansible.builtin.assert:
+        that: item in rendered
+        fail_msg: "direwolf.conf is missing required line: {{ item }}"
+      loop: "{{ required_lines }}"
+
+    - name: Forbidden Windows-only tokens must be absent
+      ansible.builtin.assert:
+        that: item not in rendered
+        fail_msg: "direwolf.conf contains forbidden token: {{ item }}"
+      loop: "{{ forbidden_tokens }}"

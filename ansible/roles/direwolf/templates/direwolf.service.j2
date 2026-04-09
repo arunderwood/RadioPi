@@ -1,0 +1,16 @@
+{{ ansible_managed | comment(decoration='# ') }}
+[Unit]
+Description=Direwolf software TNC
+After=sound.target network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User={{ direwolf_user }}
+Group={{ direwolf_group }}
+ExecStart={{ direwolf_binary }} -t 0 -c {{ direwolf_config_path }}
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

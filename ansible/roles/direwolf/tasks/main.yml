@@ -1,0 +1,86 @@
+---
+- name: Ensure python3-debian is installed (prerequisite for deb822_repository)
+  ansible.builtin.apt:
+    name: python3-debian
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+  # Must run even in --check, otherwise the next task can't inspect state.
+  check_mode: false
+
+- name: Enable Debian backports for direwolf
+  ansible.builtin.deb822_repository:
+    name: "{{ direwolf_backports_name }}"
+    types: deb
+    uris: "{{ direwolf_backports_uri }}"
+    suites: "{{ direwolf_backports_suite }}"
+    components: main
+    signed_by: "{{ direwolf_backports_signed_by }}"
+    state: present
+    enabled: true
+  register: direwolf_backports_repo
+
+- name: Refresh apt cache after enabling backports
+  ansible.builtin.apt:
+    update_cache: true
+  when: direwolf_backports_repo.changed  # noqa: no-handler
+
+- name: Install direwolf from backports
+  ansible.builtin.apt:
+    name: direwolf
+    state: latest  # noqa: package-latest — tracks backports upgrades
+    default_release: "{{ direwolf_backports_suite }}"
+    update_cache: true
+    cache_valid_time: 3600
+  notify: Restart direwolf
+  # In check mode the backports repo was only "pretend" added, so apt
+  # can't validate the default_release. Skip — the deb822 diff above
+  # already reports the intended change.
+  when: not ansible_check_mode
+
+- name: Ensure direwolf system group exists
+  ansible.builtin.group:
+    name: "{{ direwolf_group }}"
+    system: true
+    state: present
+
+- name: Ensure direwolf system user exists
+  ansible.builtin.user:
+    name: "{{ direwolf_user }}"
+    group: "{{ direwolf_group }}"
+    groups: "{{ direwolf_extra_groups }}"
+    append: true
+    system: true
+    shell: /usr/sbin/nologin
+    home: /var/lib/direwolf
+    create_home: true
+    state: present
+
+- name: Render direwolf.conf
+  ansible.builtin.template:
+    src: direwolf.conf.j2
+    dest: "{{ direwolf_config_path }}"
+    owner: root
+    group: "{{ direwolf_group }}"
+    mode: "0640"
+  notify: Restart direwolf
+
+- name: Install direwolf systemd unit
+  ansible.builtin.template:
+    src: direwolf.service.j2
+    dest: "{{ direwolf_service_path }}"
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - Reload systemd
+    - Restart direwolf
+
+- name: Ensure direwolf is enabled and running
+  ansible.builtin.service:
+    name: direwolf
+    enabled: true
+    state: started
+  # In check mode the unit file isn't actually written, so systemd can't
+  # find it yet. Skip — the template task above already reports the diff.
+  when: not ansible_check_mode

@@ -3,5 +3,7 @@
 # TODO: packet radio stack (deferred).
 - name: Configure aloha
   hosts: aloha
+  become: true
   roles:
     - common
+    - direwolf
