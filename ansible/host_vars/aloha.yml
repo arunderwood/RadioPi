@@ -13,6 +13,10 @@ linbpq_nodealias: COOPND
 linbpq_sysop_call: W9CPZ
 linbpq_sysop_password: "changeme"
 linbpq_locator: CN88qv
+linbpq_bbs_callsign: W9CPZ-11
+linbpq_bbs_alias: ROOST
+linbpq_applications:
+  - { num: 1, name: "BBS", call: "W9CPZ-11", alias: "ROOST", quality: 255 }
 linbpq_ctext: |
   W9CPZ Node/BBS - Ferndale, WA  CN88qv
   Type INFO for details, BBS for mail

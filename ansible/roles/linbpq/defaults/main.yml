@@ -65,6 +65,10 @@ linbpq_sysop_call: NOCALL         # sysop callsign for telnet USER auth
 # Locked routes (list of dicts: call, quality, port)
 linbpq_routes: []
 
+# BBS identity (separate from node callsign)
+linbpq_bbs_callsign: ""
+linbpq_bbs_alias: ""
+
 # Applications
 linbpq_applications:
   - { num: 1, name: "BBS", call: "", alias: "", quality: 255 }
