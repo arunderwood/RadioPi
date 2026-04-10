@@ -1,0 +1,64 @@
+---
+# Renders roles/ax25/templates/{axports,nrports,nrbroadcast}.j2 with sample
+# vars and asserts required fields are present and no Jinja leakage.
+#
+# Run with:
+#   uv run ansible-playbook tests/ax25_conf.yml
+- name: AX.25 config template tests
+  hosts: localhost
+  gather_facts: false
+  connection: local
+  vars:
+    ax25_port_name: ax0
+    ax25_callsign: W9CPZ-7
+    ax25_speed: 0
+    ax25_paclen: 236
+    ax25_window: 7
+    ax25_description: "1200 bps VHF packet via DigiRig"
+
+    ax25_netrom_port_name: netrom
+    ax25_netrom_callsign: W9CPZ-7
+    ax25_netrom_alias: COOPND
+    ax25_netrom_paclen: 236
+    ax25_netrom_description: "NET/ROM node"
+
+    ax25_netrom_broadcasts:
+      - port: ax0
+        minobs: 6
+        defqual: 10
+        worstqual: 100
+        verbose: 1
+
+    axports_rendered: "{{ lookup('template', '../roles/ax25/templates/axports.j2') }}"
+    nrports_rendered: "{{ lookup('template', '../roles/ax25/templates/nrports.j2') }}"
+    nrbroadcast_rendered: "{{ lookup('template', '../roles/ax25/templates/nrbroadcast.j2') }}"
+
+  tasks:
+    - name: Axports must declare ax0 on W9CPZ-7 with the expected fields
+      ansible.builtin.assert:
+        that:
+          - axports_rendered is regex('(?m)^ax0\s+W9CPZ-7\s+0\s+236\s+7\s+1200 bps VHF packet via DigiRig\s*$')
+        fail_msg: "axports did not render the expected port line:\n{{ axports_rendered }}"
+
+    - name: Nrports must declare netrom port on W9CPZ-7 with alias COOPND
+      ansible.builtin.assert:
+        that:
+          - nrports_rendered is regex('(?m)^netrom\s+W9CPZ-7\s+COOPND\s+236\s+NET/ROM node\s*$')
+        fail_msg: "nrports did not render the expected port line:\n{{ nrports_rendered }}"
+
+    - name: Nrbroadcast must declare ax0 broadcast tuning
+      ansible.builtin.assert:
+        that:
+          - nrbroadcast_rendered is regex('(?m)^ax0\s+6\s+10\s+100\s+1\s*$')
+        fail_msg: "nrbroadcast did not render the expected broadcast line:\n{{ nrbroadcast_rendered }}"
+
+    - name: No Jinja delimiters must leak through to the rendered output
+      ansible.builtin.assert:
+        that:
+          - item is not regex('\{\{')
+          - item is not regex('\}\}')
+        fail_msg: "Template rendered with unresolved Jinja tokens:\n{{ item }}"
+      loop:
+        - "{{ axports_rendered }}"
+        - "{{ nrports_rendered }}"
+        - "{{ nrbroadcast_rendered }}"

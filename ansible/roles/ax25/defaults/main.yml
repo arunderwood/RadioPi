@@ -1,0 +1,31 @@
+---
+# AX.25 port bound to aloha's callsign-SSID.
+ax25_port_name: ax0
+ax25_callsign: NOCALL           # override in host_vars → W9CPZ-7
+ax25_speed: 0                   # 0 = don't set baud (we're on a pty, not a real serial)
+ax25_paclen: 236                # AX.25 max info field; 236 is the classic 1200-baud value
+ax25_window: 7                  # max unacked I-frames (default)
+ax25_description: "1200 bps VHF packet via DigiRig"
+
+# direwolf -p creates this symlink to a freshly-allocated pty.
+ax25_kiss_tty: /tmp/kisstnc
+
+# NET/ROM layer on top of AX.25.
+ax25_netrom_enabled: true
+ax25_netrom_port_name: netrom
+ax25_netrom_callsign: NOCALL    # override in host_vars → W9CPZ-7
+ax25_netrom_alias: NODE         # override in host_vars → COOPND
+ax25_netrom_paclen: 236
+ax25_netrom_description: "NET/ROM node"
+
+# nrbroadcast: one row per AX.25 port that should broadcast NET/ROM routing.
+ax25_netrom_broadcasts:
+  - port: "{{ ax25_port_name }}"
+    minobs: 6
+    defqual: 10
+    worstqual: 100
+    verbose: 1
+
+ax25_packages:
+  - ax25-tools
+  - ax25-apps

@@ -1,0 +1,18 @@
+---
+- name: Reload systemd
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Restart kissattach
+  ansible.builtin.service:
+    name: kissattach
+    state: restarted
+  when: not ansible_check_mode
+
+- name: Restart netromd
+  ansible.builtin.service:
+    name: netromd
+    state: restarted
+  when:
+    - not ansible_check_mode
+    - ax25_netrom_enabled

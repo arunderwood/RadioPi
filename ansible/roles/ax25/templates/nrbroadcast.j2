@@ -1,0 +1,5 @@
+{{ ansible_managed | comment }}
+# port  minobs  defqual  worstqual  verbose
+{% for b in ax25_netrom_broadcasts %}
+{{ b.port }}  {{ b.minobs }}  {{ b.defqual }}  {{ b.worstqual }}  {{ b.verbose }}
+{% endfor %}

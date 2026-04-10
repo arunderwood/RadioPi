@@ -1,0 +1,18 @@
+{{ ansible_managed | comment(decoration='# ') }}
+[Unit]
+Description=Attach Dire Wolf KISS pty to kernel AX.25 port {{ ax25_port_name }}
+Documentation=man:kissattach(8) man:kissparms(8)
+After=direwolf.service
+Requires=direwolf.service
+
+[Service]
+Type=simple
+# Wait for direwolf to create the pty symlink, then resolve it and attach.
+# Passing the resolved /dev/pts/N path (not the symlink) avoids devpts
+# permission issues where root cannot traverse another user's pty symlink.
+ExecStartPre=/bin/sh -c 'for i in $(seq 1 50); do [ -L {{ ax25_kiss_tty }} ] && exit 0; sleep 0.2; done; echo "{{ ax25_kiss_tty }} never appeared" >&2; exit 1'
+ExecStart=/bin/sh -c 'exec /usr/sbin/kissattach $(readlink {{ ax25_kiss_tty }}) {{ ax25_port_name }}'
+ExecStartPost=/usr/sbin/kissparms -c 1 -p {{ ax25_port_name }}
+
+[Install]
+WantedBy=multi-user.target
