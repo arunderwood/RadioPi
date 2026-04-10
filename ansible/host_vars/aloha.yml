@@ -1,7 +1,30 @@
 ---
-# Host-specific variables for aloha (AX.25 / NET/ROM node).
+# Host-specific variables for aloha.
 direwolf_mycall: W9CPZ
 
+# Kernel AX.25 (used when ax25 role is active)
 ax25_callsign: W9CPZ-7
 ax25_netrom_callsign: W9CPZ-7
 ax25_netrom_alias: COOPND
+
+# LinBPQ (used when linbpq role is active)
+linbpq_nodecall: W9CPZ-7
+linbpq_nodealias: COOPND
+linbpq_sysop_call: W9CPZ
+linbpq_sysop_password: "changeme"
+linbpq_locator: CN88qv
+linbpq_ctext: |
+  W9CPZ Node/BBS - Ferndale, WA  CN88qv
+  Type INFO for details, BBS for mail
+linbpq_idmsg: "W9CPZ-7 BBS/Node Ferndale WA CN88qv 145.050"
+linbpq_btext: "W9CPZ-7 BBS/Node Ferndale WA CN88qv 145.050"
+linbpq_infomsg: |2
+    Sysop: Andrew (W9CPZ)
+    QTH:   Ferndale, WA  CN88qv
+    Freq:  145.050 MHz  1200 baud
+
+    Type BBS to connect to the bulletin board.
+    Type NODES to see the network.
+    Type MHEARD to see stations I hear.
+
+    73 de W9CPZ

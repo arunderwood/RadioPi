@@ -1,0 +1,18 @@
+{{ ansible_managed | comment(decoration='# ') }}
+[Unit]
+Description=LinBPQ packet radio node
+Documentation=https://www.cantab.net/users/john.wiseman/Documents/
+After=network.target direwolf.service
+Wants=direwolf.service
+
+[Service]
+Type=simple
+User={{ linbpq_user }}
+Group={{ linbpq_group }}
+WorkingDirectory={{ linbpq_install_dir }}
+ExecStart={{ linbpq_binary }}
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

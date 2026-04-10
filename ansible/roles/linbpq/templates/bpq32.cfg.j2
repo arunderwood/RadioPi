@@ -1,0 +1,109 @@
+{{ ansible_managed | comment(decoration='; ') }}
+
+NODECALL={{ linbpq_nodecall }}
+NODEALIAS={{ linbpq_nodealias }}
+{% if linbpq_locator %}
+LOCATOR={{ linbpq_locator }}
+{% endif %}
+PASSWORD={{ linbpq_sysop_password }}
+
+IDMSG:
+{% if linbpq_idmsg %}
+{{ linbpq_idmsg }}
+{% else %}
+{{ linbpq_nodecall }} {{ linbpq_nodealias }}
+{% endif %}
+***
+BTEXT:
+{% if linbpq_btext %}
+{{ linbpq_btext }}
+{% else %}
+{{ linbpq_nodecall }} {{ linbpq_nodealias }}
+{% endif %}
+***
+INFOMSG:
+{% if linbpq_infomsg %}
+{{ linbpq_infomsg }}
+{% endif %}
+***
+CTEXT:
+{{ linbpq_nodecall }} {{ linbpq_nodealias }}
+{{ linbpq_ctext }}
+***
+FULL_CTEXT={{ linbpq_full_ctext }}
+
+OBSINIT={{ linbpq_obsinit }}
+OBSMIN={{ linbpq_obsmin }}
+NODESINTERVAL={{ linbpq_nodesinterval }}
+IDINTERVAL={{ linbpq_idinterval }}
+BTINTERVAL={{ linbpq_btinterval }}
+L3TIMETOLIVE={{ linbpq_l3timetolive }}
+L4RETRIES={{ linbpq_l4retries }}
+L4TIMEOUT={{ linbpq_l4timeout }}
+L4DELAY={{ linbpq_l4delay }}
+L4WINDOW={{ linbpq_l4window }}
+MAXLINKS={{ linbpq_maxlinks }}
+MAXNODES={{ linbpq_maxnodes }}
+MAXROUTES={{ linbpq_maxroutes }}
+MAXCIRCUITS={{ linbpq_maxcircuits }}
+MINQUAL={{ linbpq_minqual }}
+PACLEN={{ linbpq_paclen }}
+T3={{ linbpq_t3 }}
+IDLETIME={{ linbpq_idletime }}
+
+AUTOSAVE=1
+BBS=1
+NODE=1
+HIDENODES={{ linbpq_hidenodes }}
+ENABLE_LINKED={{ linbpq_enable_linked }}
+
+PORT
+  PORTNUM=1
+  ID={{ linbpq_port_id }}
+  TYPE=ASYNC
+  PROTOCOL=KISS
+  IPADDR={{ linbpq_kiss_ipaddr }}
+  TCPPORT={{ linbpq_kiss_tcpport }}
+  RESPTIME={{ linbpq_port_resptime }}
+  MHEARD=Y
+  BCALL={{ linbpq_nodecall }}
+  QUALITY={{ linbpq_port_quality }}
+  MINQUAL={{ linbpq_minqual }}
+  KISSOPTIONS=NOPARAMS
+  CHANNEL=A
+  FULLDUP=0
+  NOKEEPALIVES=1
+ENDPORT
+
+{% if linbpq_telnet_enabled %}
+PORT
+  PORTNUM=2
+  ID=Telnet
+  DRIVER=Telnet
+  QUALITY=0
+  CONFIG
+  LOGGING=1
+  DisconnectOnClose=0
+  SECURETELNET=1
+  TCPPORT={{ linbpq_telnetport }}
+  FBBPORT={{ linbpq_fbbport }}
+  IPV4=1
+  HTTPPORT={{ linbpq_httpport }}
+  LOGINPROMPT=Username:
+  PASSWORDPROMPT=Password:
+  MAXSESSIONS={{ linbpq_telnet_maxsessions }}
+  CloseOnDisconnect=1
+  CTEXT={{ linbpq_nodecall }} Packet Node\nEnter ? for commands\n
+  USER={{ linbpq_sysop_call }},{{ linbpq_sysop_password }},{{ linbpq_sysop_call }},"",sysop
+ENDPORT
+{% endif %}
+
+ROUTES:
+{% for route in linbpq_routes %}
+{{ route.call }},{{ route.quality }},{{ route.port }}
+{% endfor %}
+***
+
+{% for app in linbpq_applications %}
+APPLICATION {{ app.num }},{{ app.name }},,{{ app.call }},{{ app.alias }},{{ app.quality }}
+{% endfor %}
