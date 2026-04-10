@@ -10,16 +10,20 @@ No services need to be stopped. Direwolf logs audio levels to journalctl and Lin
 amixer -c Device scontrols
 ```
 
-Should list Capture and Speaker (or Playback/PCM) controls. If "Device" isn't found, check `lsusb` and `dmesg | tail -20`.
+On the DigiRig Mobile this shows three controls:
+
+- **Mic** — RX level (radio → Pi)
+- **Speaker** — TX level (Pi → radio)
+- **Auto Gain Control** — leave at default
+
+If "Device" isn't found, check `lsusb` and `dmesg | tail -20`.
 
 ## 2. Set initial ALSA levels
 
 ```bash
-amixer -c Device set Capture 80%
+amixer -c Device set Mic 30%
 amixer -c Device set Speaker 50%
 ```
-
-Control names vary by card — check `amixer -c Device scontrols` for yours.
 
 ## 3. Tune RX
 
@@ -39,15 +43,15 @@ The first number is the overall level. Target **25–50**.
 
 | Level | Action |
 |-------|--------|
-| < 10 | Increase Capture — signal is in the noise |
+| < 10 | Increase Mic — signal is in the noise |
 | **25–50** | **Good — leave it** |
-| > 75 | Decrease Capture — clipping, missed decodes |
+| > 75 | Decrease Mic — clipping, missed decodes |
 
 Adjust in a second terminal:
 
 ```bash
-amixer -c Device set Capture 90%   # too quiet
-amixer -c Device set Capture 60%   # too hot
+amixer -c Device set Mic 90%   # too quiet
+amixer -c Device set Mic 60%   # too hot
 ```
 
 If no traffic is on frequency, verify the audio path with `arecord`:
