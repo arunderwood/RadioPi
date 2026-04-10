@@ -49,9 +49,11 @@
     linbpq_httpport: 8080
     linbpq_telnet_maxsessions: 5
     linbpq_sysop_call: W9CPZ
+    linbpq_bbs_callsign: W9CPZ-11
+    linbpq_bbs_alias: ROOST
     linbpq_routes: []
     linbpq_applications:
-      - { num: 1, name: "BBS", call: "", alias: "", quality: 255 }
+      - { num: 1, name: "BBS", call: "W9CPZ-11", alias: "ROOST", quality: 255 }
 
     rendered: "{{ lookup('template', '../roles/linbpq/templates/bpq32.cfg.j2') }}"
 
@@ -76,6 +78,7 @@
       - "DRIVER=Telnet"
       - "HTTPPORT=8080"
       - "SECURETELNET=1"
+      - "LINMAIL"
 
   tasks:
     - name: Required directives must be present
@@ -110,11 +113,11 @@
           - rendered is regex('(?m)USER=W9CPZ,testpass,W9CPZ')
         fail_msg: "bpq32.cfg is missing sysop USER auth line"
 
-    - name: APPLICATION line must be present
+    - name: APPLICATION line must include BBS callsign and alias
       ansible.builtin.assert:
         that:
-          - rendered is regex('(?m)^APPLICATION 1,BBS,')
-        fail_msg: "bpq32.cfg is missing APPLICATION definition"
+          - rendered is regex('(?m)^APPLICATION 1,BBS,,W9CPZ-11,ROOST,255')
+        fail_msg: "bpq32.cfg APPLICATION line missing BBS callsign/alias"
 
     - name: No Jinja delimiters must leak through to the rendered output
       ansible.builtin.assert:
