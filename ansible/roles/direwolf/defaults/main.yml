@@ -36,6 +36,12 @@ direwolf_extra_groups:
   - audio
   - dialout
 
+# Initial ALSA mixer levels for the DigiRig (set once, then hands-off).
+# Control names match `amixer -c Device scontrols` on the DigiRig Mobile.
+direwolf_alsa_card: Device
+direwolf_alsa_mic_level: "22%"
+direwolf_alsa_speaker_level: "50%"
+
 direwolf_binary: /usr/bin/direwolf
 direwolf_config_path: /etc/direwolf.conf
 direwolf_service_path: /etc/systemd/system/direwolf.service

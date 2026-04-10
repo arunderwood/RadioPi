@@ -84,3 +84,24 @@
   # In check mode the unit file isn't actually written, so systemd can't
   # find it yet. Skip — the template task above already reports the diff.
   when: not ansible_check_mode
+
+- name: Seed initial ALSA mixer levels for DigiRig
+  ansible.builtin.shell:
+    cmd: |
+      amixer -c {{ direwolf_alsa_card }} set Mic {{ direwolf_alsa_mic_level }}
+      amixer -c {{ direwolf_alsa_card }} set Speaker {{ direwolf_alsa_speaker_level }}
+      alsactl store
+    creates: /var/lib/direwolf/.alsa_levels_seeded
+  register: direwolf_alsa_seeded
+  when: not ansible_check_mode
+
+- name: Mark ALSA levels as seeded
+  ansible.builtin.file:
+    path: /var/lib/direwolf/.alsa_levels_seeded
+    state: touch
+    owner: "{{ direwolf_user }}"
+    group: "{{ direwolf_group }}"
+    mode: "0644"
+  when:
+    - not ansible_check_mode
+    - direwolf_alsa_seeded is changed
