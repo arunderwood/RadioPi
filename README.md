@@ -12,4 +12,4 @@ Tools and configuration for managing radio-related Raspberry Pis.
 ## Hosts
 
 - **marconi** — GPS-disciplined NTP server.
-- **aloha** — Future AX.25 / NET/ROM / BBS node.
+- **aloha** — Packet radio node running Dire Wolf (software TNC) and LinBPQ (AX.25 / NET/ROM / BBS).
