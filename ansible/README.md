@@ -29,7 +29,7 @@ Or `source .venv/bin/activate` to drop the `uv run` prefix.
 ## Hosts
 
 - `marconi` — GPS/NTP server (managed).
-- `aloha` — Fresh Pi; initial management only. Packet radio (AX.25 / NET/ROM / BBS) configuration deferred.
+- `aloha` — Packet radio node running Dire Wolf (software TNC) and LinBPQ (AX.25 / NET/ROM / BBS).
 
 ## Adding dependencies
 
