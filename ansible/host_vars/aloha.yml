@@ -11,7 +11,7 @@ ax25_netrom_alias: COOPND
 linbpq_nodecall: W9CPZ-7
 linbpq_nodealias: COOPND
 linbpq_sysop_call: W9CPZ
-linbpq_sysop_password: "{{ lookup('community.general.onepassword', 'LinBPQ Sysop', field='password', vault='Private') }}"
+linbpq_sysop_password: "{{ lookup('community.general.onepassword', 'lesq73asfqjfz33wfrvtb2dp5m', field='password', vault='Private') }}"
 linbpq_locator: CN88qv
 linbpq_bbs_callsign: W9CPZ-11
 linbpq_bbs_alias: ROOST
