@@ -1,0 +1,115 @@
+---
+# Flush any pending direwolf restart before we try to talk to /tmp/kisstnc —
+# direwolf needs to be running with `-p` for the pty symlink to exist.
+- name: Flush pending handlers from the direwolf role
+  ansible.builtin.meta: flush_handlers
+
+- name: Install AX.25 user-space tools
+  ansible.builtin.apt:
+    name: "{{ ax25_packages }}"
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Ensure /etc/ax25 exists
+  ansible.builtin.file:
+    path: /etc/ax25
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Load ax25/netrom kernel modules at boot
+  ansible.builtin.template:
+    src: ax25-modules.conf.j2
+    dest: /etc/modules-load.d/ax25.conf
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Load ax25 kernel module now
+  community.general.modprobe:
+    name: ax25
+    state: present
+  # Loading a kernel module is side-effect-free on a host that already
+  # uses networking; run in check mode so downstream tasks don't skip.
+  check_mode: false
+
+- name: Load netrom kernel module now
+  community.general.modprobe:
+    name: netrom
+    state: present
+  when: ax25_netrom_enabled
+  check_mode: false
+
+- name: Render /etc/ax25/axports
+  ansible.builtin.template:
+    src: axports.j2
+    dest: /etc/ax25/axports
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart kissattach
+
+- name: Render /etc/ax25/nrports
+  ansible.builtin.template:
+    src: nrports.j2
+    dest: /etc/ax25/nrports
+    owner: root
+    group: root
+    mode: "0644"
+  when: ax25_netrom_enabled
+  notify: Restart netromd
+
+- name: Render /etc/ax25/nrbroadcast
+  ansible.builtin.template:
+    src: nrbroadcast.j2
+    dest: /etc/ax25/nrbroadcast
+    owner: root
+    group: root
+    mode: "0644"
+  when: ax25_netrom_enabled
+  notify: Restart netromd
+
+- name: Install kissattach systemd unit
+  ansible.builtin.template:
+    src: kissattach.service.j2
+    dest: /etc/systemd/system/kissattach.service
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - Reload systemd
+    - Restart kissattach
+
+- name: Install netromd systemd unit
+  ansible.builtin.template:
+    src: netromd.service.j2
+    dest: /etc/systemd/system/netromd.service
+    owner: root
+    group: root
+    mode: "0644"
+  when: ax25_netrom_enabled
+  notify:
+    - Reload systemd
+    - Restart netromd
+
+- name: Ensure kissattach is enabled and running
+  ansible.builtin.systemd_service:
+    name: kissattach
+    enabled: true
+    state: started
+    daemon_reload: true
+  # In check mode the unit file isn't actually written, so systemd can't
+  # find it yet. Skip — the template task above already reports the diff.
+  when: not ansible_check_mode
+
+- name: Ensure netromd is enabled and running
+  ansible.builtin.systemd_service:
+    name: netromd
+    enabled: true
+    state: started
+    daemon_reload: true
+  when:
+    - ax25_netrom_enabled
+    - not ansible_check_mode

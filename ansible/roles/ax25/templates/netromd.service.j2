@@ -1,0 +1,17 @@
+{{ ansible_managed | comment(decoration='# ') }}
+[Unit]
+Description=NET/ROM routing daemon
+Documentation=man:netromd(8)
+After=kissattach.service
+Requires=kissattach.service
+
+[Service]
+Type=simple
+ExecStartPre=/usr/sbin/nrattach {{ ax25_netrom_port_name }}
+ExecStart=/usr/sbin/netromd -i
+# nrattach has no detach flag; the nr0 interface is removed when netromd exits.
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

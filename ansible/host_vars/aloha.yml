@@ -1,3 +1,7 @@
 ---
-# Host-specific variables for aloha (future AX.25 / NET/ROM / BBS node).
+# Host-specific variables for aloha (AX.25 / NET/ROM node).
 direwolf_mycall: W9CPZ
+
+ax25_callsign: W9CPZ-7
+ax25_netrom_callsign: W9CPZ-7
+ax25_netrom_alias: COOPND
