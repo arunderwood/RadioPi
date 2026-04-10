@@ -1,0 +1,124 @@
+---
+# Renders roles/linbpq/templates/bpq32.cfg.j2 with sample vars and asserts
+# required directives are present and no Jinja leakage.
+#
+# Run with:
+#   uv run ansible-playbook tests/linbpq_conf.yml
+- name: LinBPQ config template tests
+  hosts: localhost
+  gather_facts: false
+  connection: local
+  vars:
+    linbpq_nodecall: W9CPZ-7
+    linbpq_nodealias: COOPND
+    linbpq_sysop_password: "testpass"
+    linbpq_locator: CN88qv
+    linbpq_ctext: "Type ? for help"
+    linbpq_idmsg: ""
+    linbpq_infomsg: ""
+    linbpq_btext: ""
+    linbpq_full_ctext: 0
+    linbpq_hidenodes: 1
+    linbpq_enable_linked: "N"
+    linbpq_idinterval: 15
+    linbpq_btinterval: 60
+    linbpq_kiss_ipaddr: 127.0.0.1
+    linbpq_kiss_tcpport: 8001
+    linbpq_port_id: "145.050 MHz 1200 bps"
+    linbpq_port_quality: 192
+    linbpq_port_resptime: 1500
+    linbpq_obsinit: 6
+    linbpq_obsmin: 4
+    linbpq_nodesinterval: 25
+    linbpq_l3timetolive: 25
+    linbpq_l4retries: 3
+    linbpq_l4timeout: 60
+    linbpq_l4delay: 10
+    linbpq_l4window: 4
+    linbpq_minqual: 50
+    linbpq_maxlinks: 63
+    linbpq_maxnodes: 512
+    linbpq_maxroutes: 64
+    linbpq_maxcircuits: 128
+    linbpq_paclen: 236
+    linbpq_t3: 120
+    linbpq_idletime: 720
+    linbpq_telnet_enabled: true
+    linbpq_telnetport: 8100
+    linbpq_fbbport: 8101
+    linbpq_httpport: 8080
+    linbpq_telnet_maxsessions: 5
+    linbpq_sysop_call: W9CPZ
+    linbpq_routes: []
+    linbpq_applications:
+      - { num: 1, name: "BBS", call: "", alias: "", quality: 255 }
+
+    rendered: "{{ lookup('template', '../roles/linbpq/templates/bpq32.cfg.j2') }}"
+
+    required_lines:
+      - "NODECALL=W9CPZ-7"
+      - "NODEALIAS=COOPND"
+      - "LOCATOR=CN88qv"
+      - "PASSWORD=testpass"
+      - "BBS=1"
+      - "NODE=1"
+      - "IPADDR=127.0.0.1"
+      - "TCPPORT=8001"
+      - "PROTOCOL=KISS"
+      - "KISSOPTIONS=NOPARAMS"
+      - "MHEARD=Y"
+      - "L4TIMEOUT=60"
+      - "PACLEN=236"
+      - "MAXNODES=512"
+      - "IDINTERVAL=15"
+      - "FULL_CTEXT=0"
+      - "HIDENODES=1"
+      - "DRIVER=Telnet"
+      - "HTTPPORT=8080"
+      - "SECURETELNET=1"
+
+  tasks:
+    - name: Required directives must be present
+      ansible.builtin.assert:
+        that: item in rendered
+        fail_msg: "bpq32.cfg is missing required line: {{ item }}"
+      loop: "{{ required_lines }}"
+
+    - name: CTEXT block must contain welcome text
+      ansible.builtin.assert:
+        that:
+          - "'Type ? for help' in rendered"
+        fail_msg: "bpq32.cfg is missing CTEXT content"
+
+    - name: PORT block must be properly delimited
+      ansible.builtin.assert:
+        that:
+          - "'PORT' in rendered"
+          - "'ENDPORT' in rendered"
+        fail_msg: "bpq32.cfg is missing PORT/ENDPORT block"
+
+    - name: ROUTES block must be terminated
+      ansible.builtin.assert:
+        that:
+          - rendered is regex('(?m)^ROUTES:')
+          - rendered is regex('(?m)^\*\*\*')
+        fail_msg: "bpq32.cfg is missing ROUTES section or terminator"
+
+    - name: Telnet port must have sysop USER line
+      ansible.builtin.assert:
+        that:
+          - rendered is regex('(?m)USER=W9CPZ,testpass,W9CPZ')
+        fail_msg: "bpq32.cfg is missing sysop USER auth line"
+
+    - name: APPLICATION line must be present
+      ansible.builtin.assert:
+        that:
+          - rendered is regex('(?m)^APPLICATION 1,BBS,')
+        fail_msg: "bpq32.cfg is missing APPLICATION definition"
+
+    - name: No Jinja delimiters must leak through to the rendered output
+      ansible.builtin.assert:
+        that:
+          - rendered is not regex('\{\{')
+          - rendered is not regex('\}\}')
+        fail_msg: "Template rendered with unresolved Jinja tokens"

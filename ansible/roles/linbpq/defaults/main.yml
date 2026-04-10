@@ -1,0 +1,84 @@
+---
+# LinBPQ node + BBS configuration.
+# LinBPQ requires most directives to be explicitly present in bpq32.cfg.
+
+# Station identity
+linbpq_nodecall: NOCALL
+linbpq_nodealias: NODE
+linbpq_sysop_password: ""
+linbpq_locator: ""
+
+# Text blocks (multi-line, rendered inside : ... *** blocks)
+linbpq_ctext: "Type ? for help"
+linbpq_idmsg: ""
+linbpq_infomsg: ""
+linbpq_btext: ""
+
+# Options
+linbpq_full_ctext: 0
+linbpq_hidenodes: 1
+linbpq_enable_linked: "N"
+
+# Broadcast timers (minutes)
+linbpq_idinterval: 15
+linbpq_btinterval: 60
+
+# Network / NET/ROM parameters
+linbpq_obsinit: 6
+linbpq_obsmin: 4
+linbpq_nodesinterval: 25
+linbpq_l3timetolive: 25
+linbpq_l4retries: 3
+linbpq_l4timeout: 60
+linbpq_l4delay: 10
+linbpq_l4window: 4
+linbpq_minqual: 50
+
+# Table sizes
+linbpq_maxlinks: 63
+linbpq_maxnodes: 512
+linbpq_maxroutes: 64
+linbpq_maxcircuits: 128
+
+# Packet parameters
+linbpq_paclen: 236
+linbpq_t3: 120
+linbpq_idletime: 720
+
+# KISS TCP connection to Direwolf
+linbpq_kiss_ipaddr: 127.0.0.1
+linbpq_kiss_tcpport: 8001
+
+# RF port
+linbpq_port_id: "145.050 MHz 1200 bps"
+linbpq_port_quality: 192
+linbpq_port_resptime: 1500
+
+# Telnet/HTTP management port
+linbpq_telnet_enabled: true
+linbpq_telnetport: 8100
+linbpq_fbbport: 8101
+linbpq_httpport: 8080
+linbpq_telnet_maxsessions: 5
+linbpq_sysop_call: NOCALL         # sysop callsign for telnet USER auth
+
+# Locked routes (list of dicts: call, quality, port)
+linbpq_routes: []
+
+# Applications
+linbpq_applications:
+  - { num: 1, name: "BBS", call: "", alias: "", quality: 255 }
+
+# Service account
+linbpq_user: linbpq
+linbpq_group: linbpq
+
+# Paths — LinBPQ reads bpq32.cfg from its working directory
+linbpq_install_dir: /opt/linbpq
+linbpq_binary: "{{ linbpq_install_dir }}/linbpq"
+linbpq_config_path: "{{ linbpq_install_dir }}/bpq32.cfg"
+linbpq_html_dir: "{{ linbpq_install_dir }}/HTML"
+linbpq_service_path: /etc/systemd/system/linbpq.service
+
+# Binary download (arm64 Pi build)
+linbpq_download_url: "https://www.cantab.net/users/john.wiseman/Downloads/pilinbpq64"

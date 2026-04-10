@@ -1,0 +1,100 @@
+---
+- name: Flush pending handlers from prior roles
+  ansible.builtin.meta: flush_handlers
+
+- name: Stop kernel AX.25 services if present (linbpq owns this layer)
+  ansible.builtin.systemd_service:
+    name: "{{ item }}"
+    state: stopped
+    enabled: false
+  loop:
+    - netromd
+    - kissattach
+  failed_when: false
+  when: not ansible_check_mode
+
+- name: Ensure libcap2-bin is installed (for setcap)
+  ansible.builtin.apt:
+    name: libcap2-bin
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Create linbpq group
+  ansible.builtin.group:
+    name: "{{ linbpq_group }}"
+    system: true
+
+- name: Create linbpq user
+  ansible.builtin.user:
+    name: "{{ linbpq_user }}"
+    group: "{{ linbpq_group }}"
+    system: true
+    home: "{{ linbpq_install_dir }}"
+    shell: /usr/sbin/nologin
+    create_home: false
+
+- name: Create install directory
+  ansible.builtin.file:
+    path: "{{ linbpq_install_dir }}"
+    state: directory
+    owner: "{{ linbpq_user }}"
+    group: "{{ linbpq_group }}"
+    mode: "0755"
+
+- name: Create HTML directory for web UI
+  ansible.builtin.file:
+    path: "{{ linbpq_html_dir }}"
+    state: directory
+    owner: "{{ linbpq_user }}"
+    group: "{{ linbpq_group }}"
+    mode: "0755"
+
+- name: Download LinBPQ binary
+  ansible.builtin.get_url:
+    url: "{{ linbpq_download_url }}"
+    dest: "{{ linbpq_binary }}"
+    owner: "{{ linbpq_user }}"
+    group: "{{ linbpq_group }}"
+    mode: "0755"
+  notify: Restart linbpq
+  when: not ansible_check_mode
+
+- name: Set network capabilities on LinBPQ binary
+  community.general.capabilities:
+    path: "{{ linbpq_binary }}"
+    capability: "{{ item }}"
+    state: present
+  loop:
+    - cap_net_admin=ep
+    - cap_net_raw=ep
+    - cap_net_bind_service=ep
+  when: not ansible_check_mode
+
+- name: Install bpq32.cfg
+  ansible.builtin.template:
+    src: bpq32.cfg.j2
+    dest: "{{ linbpq_config_path }}"
+    owner: "{{ linbpq_user }}"
+    group: "{{ linbpq_group }}"
+    mode: "0640"
+  notify: Restart linbpq
+
+- name: Install linbpq systemd unit
+  ansible.builtin.template:
+    src: linbpq.service.j2
+    dest: "{{ linbpq_service_path }}"
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - Reload systemd
+    - Restart linbpq
+
+- name: Ensure linbpq is enabled and running
+  ansible.builtin.systemd_service:
+    name: linbpq
+    enabled: true
+    state: started
+    daemon_reload: true
+  when: not ansible_check_mode

@@ -1,9 +1,10 @@
 ---
-# aloha — AX.25 / NET/ROM node (BBS layer still deferred).
+# aloha — LinBPQ packet node + BBS on top of Direwolf.
+# To switch back to kernel AX.25, replace linbpq with ax25.
 - name: Configure aloha
   hosts: aloha
   become: true
   roles:
     - common
     - direwolf
-    - ax25
+    - linbpq
