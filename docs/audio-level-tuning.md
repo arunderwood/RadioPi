@@ -21,7 +21,7 @@ If "Device" isn't found, check `lsusb` and `dmesg | tail -20`.
 ## 2. Set initial ALSA levels
 
 ```bash
-amixer -c Device set Mic 30%
+amixer -c Device set Mic 22%
 amixer -c Device set Speaker 50%
 ```
 
