@@ -5,6 +5,13 @@
       - min
       - distribution
 
+- name: Set default boot target to console (no desktop)
+  ansible.builtin.file:
+    src: /lib/systemd/system/multi-user.target
+    dest: /etc/systemd/system/default.target
+    state: link
+    force: true
+
 - name: Update apt cache and dist-upgrade
   ansible.builtin.apt:
     update_cache: true
