@@ -1,0 +1,5 @@
+.paracon/
+paracon.cfg
+paracon.log
+monitor.log
+*_*.log
