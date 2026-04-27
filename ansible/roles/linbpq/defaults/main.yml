@@ -59,7 +59,7 @@ linbpq_telnet_enabled: true
 linbpq_telnetport: 8100
 linbpq_fbbport: 8101
 linbpq_httpport: 8080
-linbpq_telnet_maxsessions: 5
+linbpq_telnet_maxsessions: 20    # bump above 5 — browsers open ~6 keepalive sockets per tab
 linbpq_sysop_call: NOCALL         # sysop callsign for telnet USER auth
 
 # Locked routes (list of dicts: call, quality, port)
@@ -86,3 +86,18 @@ linbpq_service_path: /etc/systemd/system/linbpq.service
 
 # Binary download (arm64 Pi build)
 linbpq_download_url: "https://www.cantab.net/users/john.wiseman/Downloads/pilinbpq64"
+
+# BPQ-Alt-Webmail — modern single-file webmail UI dropped into HTML/.
+# When enabled, the alt UI is reachable at http://<host>:{{ linbpq_httpport }}/bpq-alt-webmail.html
+# alongside LinBPQ's stock pages. https://github.com/jayflanzbaum-svg/BPQ-Alt-Webmail
+linbpq_alt_webmail_enabled: true
+linbpq_alt_webmail_repo: "jayflanzbaum-svg/BPQ-Alt-Webmail"
+linbpq_alt_webmail_ref: "154f99a72e52fdad2d37f21bded5466efca41a7c"  # main @ 2026-04-26
+linbpq_alt_webmail_base_url: "https://raw.githubusercontent.com/{{ linbpq_alt_webmail_repo }}/{{ linbpq_alt_webmail_ref }}"
+linbpq_alt_webmail_fonts:
+  - ibm-400-normal.woff2
+  - ibm-500-normal.woff2
+  - ibm-600-normal.woff2
+  - jbm-400-normal.woff2
+  - jbm-500-normal.woff2
+  - jbm-600-normal.woff2
