@@ -50,6 +50,10 @@
     group: "{{ linbpq_group }}"
     mode: "0755"
 
+- name: Install BPQ-Alt-Webmail static assets
+  ansible.builtin.import_tasks: alt_webmail.yml
+  when: linbpq_alt_webmail_enabled | bool
+
 - name: Download LinBPQ binary
   ansible.builtin.get_url:
     url: "{{ linbpq_download_url }}"

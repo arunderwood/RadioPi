@@ -1,0 +1,27 @@
+---
+- name: Create HTML/fonts directory for alt webmail
+  ansible.builtin.file:
+    path: "{{ linbpq_html_dir }}/fonts"
+    state: directory
+    owner: "{{ linbpq_user }}"
+    group: "{{ linbpq_group }}"
+    mode: "0755"
+
+- name: Download bpq-alt-webmail.html
+  ansible.builtin.get_url:
+    url: "{{ linbpq_alt_webmail_base_url }}/bpq-alt-webmail.html"
+    dest: "{{ linbpq_html_dir }}/bpq-alt-webmail.html"
+    owner: "{{ linbpq_user }}"
+    group: "{{ linbpq_group }}"
+    mode: "0644"
+  when: not ansible_check_mode
+
+- name: Download bpq-alt-webmail fonts
+  ansible.builtin.get_url:
+    url: "{{ linbpq_alt_webmail_base_url }}/fonts/{{ item }}"
+    dest: "{{ linbpq_html_dir }}/fonts/{{ item }}"
+    owner: "{{ linbpq_user }}"
+    group: "{{ linbpq_group }}"
+    mode: "0644"
+  loop: "{{ linbpq_alt_webmail_fonts }}"
+  when: not ansible_check_mode
