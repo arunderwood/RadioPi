@@ -54,10 +54,12 @@
   ansible.builtin.import_tasks: alt_webmail.yml
   when: linbpq_alt_webmail_enabled | bool
 
-# force: the download URL tracks G8BPQ's current build rather than a fixed
-# version, and get_url skips the fetch entirely when dest exists. Re-fetching
-# every run is what keeps the deployed binary in step with upstream; the restart
-# handler only fires when the bytes actually differ.
+# The download URL is unversioned and serves whatever G8BPQ has built most
+# recently, so the checksum is the version pin. get_url only lets a matching
+# destination checksum skip the download while force is false -- with force
+# true it re-downloads every run and fails the play the moment upstream
+# rebuilds. Keep force false: a matching binary is left alone, and bumping
+# linbpq_binary_checksum is what pulls a new build and restarts the node.
 - name: Download LinBPQ binary
   ansible.builtin.get_url:
     url: "{{ linbpq_download_url }}"
@@ -65,7 +67,8 @@
     owner: "{{ linbpq_user }}"
     group: "{{ linbpq_group }}"
     mode: "0755"
-    force: true
+    force: false
+    checksum: "{{ linbpq_binary_checksum }}"
   notify: Restart linbpq
   when: not ansible_check_mode
 

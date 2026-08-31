@@ -84,8 +84,13 @@ linbpq_config_path: "{{ linbpq_install_dir }}/bpq32.cfg"
 linbpq_html_dir: "{{ linbpq_install_dir }}/HTML"
 linbpq_service_path: /etc/systemd/system/linbpq.service
 
-# Binary download (arm64 Pi build)
+# Binary download (arm64 Pi build).
+# The URL is unversioned and tracks G8BPQ's current build, so the checksum is
+# what identifies the version. Upgrading is a deliberate two-step change: fetch
+# the new binary, verify it, and update this value. See the role's tasks for
+# why the pin depends on get_url's force parameter staying false.
 linbpq_download_url: "https://www.cantab.net/users/john.wiseman/Downloads/pilinbpq64"
+linbpq_binary_checksum: "sha256:00641647b3d57891f20134b8358a4259e5f53a7539c5f19538e3001048d2d319"  # 6.0.25.1, published 2026-01-18
 
 # BPQ-Alt-Webmail — modern single-file webmail UI dropped into HTML/.
 # When enabled, the alt UI is reachable at http://<host>:{{ linbpq_httpport }}/bpq-alt-webmail.html
