@@ -7,6 +7,8 @@
     group: "{{ linbpq_group }}"
     mode: "0755"
 
+# force: without it get_url skips the fetch whenever dest exists, so bumping
+# linbpq_alt_webmail_ref would leave the previously deployed file in place.
 - name: Download bpq-alt-webmail.html
   ansible.builtin.get_url:
     url: "{{ linbpq_alt_webmail_base_url }}/bpq-alt-webmail.html"
@@ -14,6 +16,7 @@
     owner: "{{ linbpq_user }}"
     group: "{{ linbpq_group }}"
     mode: "0644"
+    force: true
   when: not ansible_check_mode
 
 - name: Download bpq-alt-webmail fonts
@@ -23,5 +26,6 @@
     owner: "{{ linbpq_user }}"
     group: "{{ linbpq_group }}"
     mode: "0644"
+    force: true
   loop: "{{ linbpq_alt_webmail_fonts }}"
   when: not ansible_check_mode
