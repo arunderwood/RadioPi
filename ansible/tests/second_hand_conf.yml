@@ -1,0 +1,57 @@
+---
+# Renders roles/second_hand/templates/override.conf.j2 and asserts the
+# release-asset URL built from roles/second_hand/defaults/main.yml matches the
+# names upstream actually publishes (second-hand_<version>-<rev>_<arch>.deb).
+#
+# The defaults are loaded with include_vars rather than vars_files so the
+# set_fact overrides below win — vars_files outranks play vars.
+#
+# Run with:
+#   uv run ansible-playbook tests/second_hand_conf.yml
+- name: Second-hand config and release URL tests
+  hosts: localhost
+  gather_facts: false
+  connection: local
+  vars:
+    # Evaluated lazily, after the overrides below are in place.
+    rendered: "{{ lookup('template', '../roles/second_hand/templates/override.conf.j2') }}"
+
+    required_lines:
+      - "[Service]"
+      - "Environment=SECOND_HAND_HOST=0.0.0.0"
+      - "Environment=SECOND_HAND_PORT=8000"
+
+  tasks:
+    - name: Load the role defaults under test
+      ansible.builtin.include_vars:
+        file: ../roles/second_hand/defaults/main.yml
+
+    - name: Pin the values the role normally discovers or takes from host_vars
+      ansible.builtin.set_fact:
+        second_hand_version: "3.0.0"
+        second_hand_architecture: arm64
+        second_hand_host: "0.0.0.0"
+        second_hand_port: 8000
+
+    - name: Required drop-in directives must be present
+      ansible.builtin.assert:
+        that: item in rendered
+        fail_msg: "second-hand override.conf is missing required line: {{ item }}"
+      loop: "{{ required_lines }}"
+
+    - name: Release asset name must match upstream's dpkg-buildpackage output
+      ansible.builtin.assert:
+        that: second_hand_deb_name == "second-hand_3.0.0-1_arm64.deb"
+        fail_msg: "Built asset name {{ second_hand_deb_name }} does not match the published .deb name."
+
+    - name: Release asset URL must point at the tagged GitHub release
+      ansible.builtin.assert:
+        that:
+          - second_hand_deb_url is search('^https://github\\.com/arunderwood/second-hand/releases/download/v3\\.0\\.0/')
+          - second_hand_deb_url.endswith('second-hand_3.0.0-1_arm64.deb')
+        fail_msg: "Built asset URL is wrong: {{ second_hand_deb_url }}"
+
+    - name: The dbgsym package must never be selected
+      ansible.builtin.assert:
+        that: "'dbgsym' not in second_hand_deb_name"
+        fail_msg: "Asset name selected the dbgsym package, not the binary package."

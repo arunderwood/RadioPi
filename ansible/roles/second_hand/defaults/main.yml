@@ -1,0 +1,37 @@
+---
+# Upstream repository and the release tag to install (tag without the "v").
+#
+# second-hand publishes its .deb files as GitHub *Release assets* — there is
+# no apt repository, so `apt upgrade` will never move this package. Upgrading
+# is a bump of second_hand_version here followed by a playbook run.
+#
+# Before bumping, confirm the tag actually carries assets:
+#   gh release view v<version> --repo arunderwood/second-hand --json assets
+second_hand_repo: arunderwood/second-hand
+second_hand_version: "3.0.0"
+
+# Debian revision appended by upstream's dpkg-buildpackage run.
+second_hand_deb_revision: 1
+
+# Full version as dpkg reports it, used for the already-installed comparison.
+second_hand_deb_version: "{{ second_hand_version }}-{{ second_hand_deb_revision }}"
+
+# Debian architecture of the release asset. Left null so the role discovers it
+# with `dpkg --print-architecture`; set explicitly only to force a specific
+# .deb (the release carries both amd64 and arm64).
+second_hand_architecture: ~
+
+second_hand_deb_name: "second-hand_{{ second_hand_deb_version }}_{{ second_hand_architecture }}.deb"
+second_hand_deb_url: "https://github.com/{{ second_hand_repo }}/releases/download/v{{ second_hand_version }}/{{ second_hand_deb_name }}"
+
+# Version currently installed on the target ("" when the package is absent).
+# Evaluated lazily, after package_facts has run.
+second_hand_installed_version: >-
+  {{ (ansible_facts.packages | default({})).get('second-hand', [{}])[0].get('version', '') }}
+
+# Dashboard bind address and port. The packaged unit hardcodes 0.0.0.0:8000;
+# these are applied as a systemd drop-in so the shipped unit stays untouched.
+second_hand_host: "0.0.0.0"
+second_hand_port: 8000
+
+second_hand_service_dropin_dir: /etc/systemd/system/second-hand.service.d
