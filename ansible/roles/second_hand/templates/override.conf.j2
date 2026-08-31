@@ -1,0 +1,6 @@
+{{ ansible_managed | comment }}
+[Service]
+# Later assignments of the same variable win, so these override the
+# Environment= lines in the packaged unit.
+Environment=SECOND_HAND_HOST={{ second_hand_host }}
+Environment=SECOND_HAND_PORT={{ second_hand_port }}

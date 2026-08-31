@@ -1,0 +1,10 @@
+---
+- name: Reload systemd
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Restart second-hand
+  ansible.builtin.service:
+    name: second-hand
+    state: restarted
+  when: not ansible_check_mode

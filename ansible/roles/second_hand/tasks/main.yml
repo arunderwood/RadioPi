@@ -1,0 +1,71 @@
+---
+- name: Discover the target's Debian architecture
+  ansible.builtin.command: dpkg --print-architecture
+  register: second_hand_dpkg_arch
+  changed_when: false
+  # Side-effect free, and the release asset URL can't be built without it —
+  # must run even in --check.
+  check_mode: false
+  when: second_hand_architecture is none
+
+- name: Select the release asset architecture
+  ansible.builtin.set_fact:
+    second_hand_architecture: "{{ second_hand_dpkg_arch.stdout }}"
+  when: second_hand_architecture is none
+
+- name: Gather installed package facts
+  ansible.builtin.package_facts:
+    manager: apt
+
+- name: Report the pinned and installed versions
+  ansible.builtin.debug:
+    msg: >-
+      second-hand pinned at {{ second_hand_deb_version }} ({{ second_hand_architecture }});
+      installed: {{ second_hand_installed_version | default('none', true) }}
+
+- name: Install second-hand from the upstream GitHub Release
+  ansible.builtin.apt:
+    deb: "{{ second_hand_deb_url }}"
+    state: present
+  notify: Restart second-hand
+  # There is no apt repo behind this package, so the .deb is fetched straight
+  # from the release. Skipped when the pinned version is already installed,
+  # which keeps repeat runs off the network entirely.
+  #
+  # This installs and upgrades but will not downgrade — dpkg refuses to go
+  # backwards. To roll back, `apt remove second-hand` first, then re-run.
+  #
+  # In check mode apt would still download the .deb to evaluate it; skip and
+  # let the debug task above report the intended change.
+  when:
+    - not ansible_check_mode
+    - second_hand_installed_version != second_hand_deb_version
+
+- name: Ensure second-hand systemd drop-in directory exists
+  ansible.builtin.file:
+    path: "{{ second_hand_service_dropin_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Deploy second-hand service drop-in
+  ansible.builtin.template:
+    src: override.conf.j2
+    dest: "{{ second_hand_service_dropin_dir }}/override.conf"
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - Reload systemd
+    - Restart second-hand
+
+- name: Ensure second-hand is enabled and running
+  ansible.builtin.service:
+    name: second-hand
+    enabled: true
+    state: started
+  # The package's postinst already enables and starts it; this asserts the
+  # state on later runs. In check mode the unit isn't on disk yet, so systemd
+  # can't find it.
+  when: not ansible_check_mode
