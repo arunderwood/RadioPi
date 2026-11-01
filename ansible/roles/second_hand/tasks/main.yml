@@ -27,10 +27,15 @@
   ansible.builtin.apt:
     deb: "{{ second_hand_deb_url }}"
     state: present
+    install_recommends: true
   notify: Restart second-hand
   # There is no apt repo behind this package, so the .deb is fetched straight
   # from the release. Skipped when the pinned version is already installed,
   # which keeps repeat runs off the network entirely.
+  #
+  # install_recommends is load-bearing on the `deb:` path: the module reads the
+  # .deb's Recommends only when it is true. Unset means drop them, not defer to
+  # apt's own APT::Install-Recommends.
   #
   # This installs and upgrades but will not downgrade — dpkg refuses to go
   # backwards. To roll back, `apt remove second-hand` first, then re-run.
