@@ -13,6 +13,12 @@
 # Reaching aloha means rendering the linbpq config, so this needs the 1Password
 # CLI unlocked for the sysop password. Use playbooks/marconi.yml on its own
 # when that isn't available.
+#
+# One host per play means an unreachable host ends the run before the later
+# plays converge: a marconi that doesn't resolve leaves aloha untouched. Use
+# --limit to converge the host that is up. `ignore_unreachable: true` does not
+# help — the play then runs on past the unreachable tasks until one fails hard,
+# which ends the run anyway, just more noisily.
 - name: Converge marconi
   ansible.builtin.import_playbook: playbooks/marconi.yml
 
