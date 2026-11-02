@@ -1,0 +1,35 @@
+---
+# Raspberry Pi OS does not install update-notifier-common, the package that
+# creates /var/run/reboot-required, so on these hosts that file never appears
+# and a kernel upgrade leaves no trace apt can report. Comparing the running
+# kernel against the newest installed linux-image is the only signal that
+# works here; the flag file is still honoured for distros that do write it.
+#
+# Only the numeric version is compared. Both flavours (+rpt-rpi-v8 and
+# +rpt-rpi-2712) are installed and upgraded together, so matching full package
+# names would compare a running v8 kernel against an installed 2712 package
+# and report a reboot that isn't due.
+#
+# This reduces a Debian generic kernel (6.1.0-18-arm64) to 6.1.0, dropping the
+# ABI number — fine for the Raspberry Pi kernels these hosts run, where the
+# version alone always moves.
+common_running_kernel_version: >-
+  {{ ansible_facts.kernel | default('') | regex_replace('^([0-9][0-9.]*).*$', '\1') }}
+
+# Evaluated lazily, after package_facts has run. Meta-packages
+# (linux-image-rpi-v8) are excluded by requiring a digit after the prefix, and
+# the -unsigned variants collapse onto the same version via unique.
+common_installed_kernel_versions: >-
+  {{ ansible_facts.packages | default({}) | list
+     | select('match', '^linux-image-[0-9]')
+     | map('regex_replace', '^linux-image-([0-9][0-9.]*).*$', '\1')
+     | unique | community.general.version_sort }}
+
+common_newest_kernel_version: >-
+  {{ common_installed_kernel_versions | last | default('', true) }}
+
+common_reboot_required: >-
+  {{ (common_reboot_required_file.stat.exists | default(false))
+     or (common_newest_kernel_version | length > 0
+         and common_running_kernel_version | length > 0
+         and common_newest_kernel_version is version(common_running_kernel_version, '>')) }}

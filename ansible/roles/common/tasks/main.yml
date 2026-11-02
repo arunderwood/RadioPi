@@ -33,9 +33,17 @@
   changed_when: false
   when: ansible_facts.os_family == 'Debian'
 
+- name: Gather installed package facts
+  ansible.builtin.package_facts:
+    manager: apt
+  when: ansible_facts.os_family == 'Debian'
+
 - name: Warn if a reboot is required
   ansible.builtin.debug:
-    msg: "{{ inventory_hostname }} requires a reboot to complete package updates."
+    msg: >-
+      {{ inventory_hostname }} requires a reboot to complete package updates —
+      running kernel {{ ansible_facts.kernel }}, newest installed
+      {{ common_newest_kernel_version | default('unknown', true) }}.
   when:
     - ansible_facts.os_family == 'Debian'
-    - common_reboot_required_file.stat.exists | default(false)
+    - common_reboot_required | bool
