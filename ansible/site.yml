@@ -1,5 +1,20 @@
 ---
-- name: Baseline for all radio pis
-  hosts: radio_pis
-  roles:
-    - common
+# Converges the whole fleet by running each host's playbook, which applies
+# `common` first and then that host's service roles.
+#
+# Applying `common` on its own is not safe: its dist-upgrade can stop a service
+# that a later role owns. The direwolf package ships its own
+# /usr/lib/systemd/system/direwolf.service, and the direwolf role overrides
+# that same unit name from /etc — so a direwolf upgrade runs the package's
+# maintainer scripts against our unit, which stop it and do not start it back.
+# Only the direwolf role asserts the service to started, so a baseline-only run
+# across aloha takes the TNC off the air and leaves it there.
+#
+# Reaching aloha means rendering the linbpq config, so this needs the 1Password
+# CLI unlocked for the sysop password. Use playbooks/marconi.yml on its own
+# when that isn't available.
+- name: Converge marconi
+  ansible.builtin.import_playbook: playbooks/marconi.yml
+
+- name: Converge aloha
+  ansible.builtin.import_playbook: playbooks/aloha.yml
