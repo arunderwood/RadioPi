@@ -8,7 +8,7 @@
 # Before bumping, confirm the tag actually carries assets:
 #   gh release view v<version> --repo arunderwood/second-hand --json assets
 second_hand_repo: arunderwood/second-hand
-second_hand_version: "3.3.0"
+second_hand_version: "3.3.1"
 
 # Debian revision appended by upstream's dpkg-buildpackage run.
 second_hand_deb_revision: 1
