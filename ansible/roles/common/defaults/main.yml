@@ -1,4 +1,12 @@
 ---
+# Path to the Raspberry Pi firmware config.
+common_boot_config_path: /boot/firmware/config.txt
+
+# Whether the onboard Wi-Fi radio stays on. A host that is wired into a VLAN
+# turns it off, because a second interface on another network routes around
+# the firewall between them.
+common_wifi_enabled: true
+
 # Raspberry Pi OS does not install update-notifier-common, the package that
 # creates /var/run/reboot-required, so on these hosts that file never appears
 # and a kernel upgrade leaves no trace apt can report. Comparing the running

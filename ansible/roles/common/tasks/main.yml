@@ -12,6 +12,9 @@
     state: link
     force: true
 
+- name: Configure the Wi-Fi radio
+  ansible.builtin.import_tasks: wifi.yml
+
 - name: Update apt cache and dist-upgrade
   ansible.builtin.apt:
     update_cache: true
