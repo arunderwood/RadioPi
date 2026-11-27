@@ -1,0 +1,6 @@
+---
+- name: Warn reboot required for Wi-Fi
+  ansible.builtin.debug:
+    msg: >-
+      Boot firmware config changed ({{ common_boot_config_path }}).
+      {{ inventory_hostname }} needs a reboot for the Wi-Fi radio change to take effect.

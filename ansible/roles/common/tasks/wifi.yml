@@ -1,0 +1,9 @@
+---
+- name: Set the Wi-Fi radio state in boot config
+  ansible.builtin.lineinfile:
+    path: "{{ common_boot_config_path }}"
+    regexp: '^\s*dtoverlay=disable-wifi\s*$'
+    line: dtoverlay=disable-wifi
+    insertafter: '^\[all\]'
+    state: "{{ 'absent' if common_wifi_enabled | bool else 'present' }}"
+  notify: Warn reboot required for Wi-Fi

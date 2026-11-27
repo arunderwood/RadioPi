@@ -1,0 +1,36 @@
+---
+# Tests the lineinfile regex in roles/common/tasks/wifi.yml.
+#
+# Run with:
+#   uv run ansible-playbook tests/common_wifi.yml
+#
+# The regex is loaded from the real task file so the test breaks if it drifts.
+- name: Common Wi-Fi boot regex tests
+  hosts: localhost
+  gather_facts: false
+  connection: local
+  vars:
+    wifi_tasks: "{{ lookup('file', '../roles/common/tasks/wifi.yml') | from_yaml }}"
+    wifi_regex: "{{ wifi_tasks[0]['ansible.builtin.lineinfile'].regexp }}"
+    wifi_should_match:
+      - dtoverlay=disable-wifi
+      - "  dtoverlay=disable-wifi"
+      - "dtoverlay=disable-wifi  "
+    wifi_should_not_match:
+      - "#dtoverlay=disable-wifi"
+      - dtoverlay=disable-bt
+      - dtoverlay=disable-wifi-pi5
+      - dtoverlay=pps-gpio,gpiopin=4
+
+  tasks:
+    - name: Wi-Fi regex must match the overlay line
+      ansible.builtin.assert:
+        that: (item | regex_search(wifi_regex)) is not none
+        fail_msg: "wifi_regex {{ wifi_regex }} failed to match {{ item }}"
+      loop: "{{ wifi_should_match }}"
+
+    - name: Wi-Fi regex must not match other lines
+      ansible.builtin.assert:
+        that: (item | regex_search(wifi_regex)) is none
+        fail_msg: "wifi_regex {{ wifi_regex }} wrongly matched {{ item }}"
+      loop: "{{ wifi_should_not_match }}"
