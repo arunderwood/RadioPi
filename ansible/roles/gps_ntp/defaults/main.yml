@@ -16,8 +16,16 @@ gps_ntp_nmea_precision: 1e-3
 # PPS poll exponent (chrony polls every 2^N seconds).
 gps_ntp_pps_poll: 3
 
-# Upstream NTP pool used as a sanity-check / fallback.
-gps_ntp_chrony_pool: 2.debian.pool.ntp.org
+# Upstream NTS servers, used before the first PPS lock and when GPS is lost.
+# Each name is an NTS-KE host: the target needs outbound TCP 4460 to it as
+# well as UDP 123 (all four hand out NTP on port 123). leapseclist requires
+# that none of them smears leap seconds: Cloudflare documents that it does
+# not, the other three operators publish no policy either way.
+gps_ntp_nts_servers:
+  - time.cloudflare.com
+  - oregon.time.system76.com
+  - any.time.nl
+  - time1.mbix.ca
 
 # Networks allowed to query this NTP server.
 gps_ntp_allow_networks:
@@ -28,8 +36,13 @@ gps_ntp_allow_networks:
 # hardware-receive and hardware-raw-clock. Override in host_vars.
 gps_ntp_hwtimestamp_interfaces: []
 
-# Stratum to advertise when GPS is unavailable (orphan mode).
+# Stratum to advertise once every source has been lost (local reference).
 gps_ntp_orphan_stratum: 10
+
+# Root distance (seconds) the clock must get under once before the local
+# reference may ever activate. Loose enough for a distant upstream server,
+# tight enough that only a real synchronisation satisfies it.
+gps_ntp_local_activate_distance: 0.5
 
 # Chrony rate-limit directive body.
 gps_ntp_ratelimit: "interval 3 burst 8 leak 4"
