@@ -23,6 +23,11 @@ gps_ntp_chrony_pool: 2.debian.pool.ntp.org
 gps_ntp_allow_networks:
   - 192.168.0.0/16
 
+# Interfaces whose NIC timestamps NTP packets in hardware. Empty by default:
+# it only helps where `ethtool -T <iface>` lists hardware-transmit,
+# hardware-receive and hardware-raw-clock. Override in host_vars.
+gps_ntp_hwtimestamp_interfaces: []
+
 # Stratum to advertise when GPS is unavailable (orphan mode).
 gps_ntp_orphan_stratum: 10
 

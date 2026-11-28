@@ -11,6 +11,14 @@ bindaddress 0.0.0.0
 allow {{ net }}
 {% endfor %}
 
+{% if gps_ntp_hwtimestamp_interfaces %}
+# Timestamp NTP packets in the NIC rather than the kernel. Received packets
+# the NIC fails to timestamp get a kernel timestamp instead.
+{% for iface in gps_ntp_hwtimestamp_interfaces %}
+hwtimestamp {{ iface }}
+{% endfor %}
+
+{% endif %}
 # Rate limiting to prevent abuse/amplification attacks
 ratelimit {{ gps_ntp_ratelimit }}
 
