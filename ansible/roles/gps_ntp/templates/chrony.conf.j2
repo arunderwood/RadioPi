@@ -5,8 +5,12 @@
 # Include configuration files found in /etc/chrony/conf.d.
 confdir /etc/chrony/conf.d
 
-# Use Debian vendor zone.
-pool {{ gps_ntp_chrony_pool }} iburst
+# Upstream servers set the clock before the first PPS lock and carry it when
+# GPS is lost. NTS-authenticated only, so someone on the path can delay or
+# drop these packets but cannot alter the time inside them.
+{% for server in gps_ntp_nts_servers %}
+server {{ server }} iburst nts
+{% endfor %}
 
 # SHM refclock is shared memory driver, populated by gpsd and read by chrony.
 # It is SHM 2.

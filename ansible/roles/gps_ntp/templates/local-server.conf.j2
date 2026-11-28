@@ -22,5 +22,7 @@ hwtimestamp {{ iface }}
 # Rate limiting to prevent abuse/amplification attacks
 ratelimit {{ gps_ntp_ratelimit }}
 
-# Serve time even if GPS loses sync temporarily.
-local stratum {{ gps_ntp_orphan_stratum }} orphan
+# Keep answering clients, at this stratum, once every source has been lost.
+# activate: only after the clock has been synchronised once. Without it a
+# cold boot with no GPS and no upstream serves an unset clock as real time.
+local stratum {{ gps_ntp_orphan_stratum }} orphan activate {{ gps_ntp_local_activate_distance }}
